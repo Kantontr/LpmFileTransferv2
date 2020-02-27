@@ -16,6 +16,7 @@ def main():
     #print(db.EditUser("Knut3","Knut3", "Ipknuta5", "PortKnuta3","nowy com"))
     #print(db.EditUser("Knut4","Knut4", "Ipknuta4", "PortKnuta4", "knucica4",))
     db.printDatabase()
+    db.LoadDatabaseFromFile()
 
 
 if __name__ == '__main__':

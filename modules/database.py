@@ -8,6 +8,7 @@ import os
 
 class database:
     saved_user = {}  # saved user name, ip, port
+    separator = "<SEPARATOR>"
 
     def checkIfUserExist(self, username):
         if username in self.saved_user:
@@ -58,13 +59,35 @@ class database:
             return "Operation Successfull"
         else:
             result = self.AddUser(backup[0], backup[1], backup[2], backup[3])
-            if result != "Operation Succesfull": #if backup cannot be loaded, load a backup from file
+            if result != "Operation Succesfull":  # if backup cannot be loaded, load a backup from file
                 print("Fatal error editing entry! Reloading backup from file")
                 self.LoadDatabaseFromFile()
                 return "Operation Failed. No changes"
 
     def LoadDatabaseFromFile(self):
-        print("Load:Test")
+
+        dbFile = open("config\\database.lpm", "r")
+
+        self.saved_user.clear()
+        print("KNUKNUT")
+        while True:
+            line = dbFile.readline()
+            if len(line) > 0:
+                list = line.split(self.separator)
+                list[3] = list[3][0:len(list[3]) - 1]
+                self.saved_user[list[0]] = [list[1], list[2], list[3]]
+            else:
+                break
+        self.printDatabase()
+        print("Load:Finnished loading")
 
     def SaveDatabaseToFile(self):
+
+        dbFile = open("config\\database.lpm", "w")
+
+        for i in self.saved_user:
+            dbFile.write(i + self.separator)
+            list = self.saved_user.get(i)
+            dbFile.write(list[0] + self.separator + list[1] + self.separator + list[2] + "\n")
+        dbFile.close()
         print("Save:Test")
