@@ -12,18 +12,17 @@ class Database:
 
     def checkIfUserExist(self, username):
         if username in self.saved_user:
-            print("Username exist")
             return True
         return False
 
     def checkIfIpExist(self, ip):
         for i, j in self.saved_user.items():
             if self.saved_user[i][0] == ip:
-                print("IP exist")
                 return True
         return False
 
     def printDatabase(self):
+        print("printDatabase:Printing")
         for i, j in self.saved_user.items():
             print(i, j)
 
