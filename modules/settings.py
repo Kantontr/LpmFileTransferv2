@@ -19,8 +19,8 @@ class Settings:
     def loadDefaultSettings(self):
         print("Load default settings")
         self.settings["colorScheme"] = "dark"
-        self.settings["ServerIp"] = "192.168.1.3"
-        self.settings["ServerPort"] = "50000"
+        self.settings["serverIp"] = "192.168.1.3"
+        self.settings["serverPort"] = "50000"
 
     def saveSettingsToFile(self):
         print("Saving settings to file")
