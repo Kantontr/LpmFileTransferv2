@@ -5,9 +5,12 @@ import sys
 import time
 
 from modules import database
+from modules import settings
 
 def main():
-    db = database.database()
+
+    Settings = settings.Settings()
+    db = database.Database()
     print(db.AddUser("Knut","Ipknuta","PortKnuta","Knuteusz"))
     print(db.AddUser("Knut2", "Ipknuta2", "PortKnuta2",""))
     print(db.AddUser("Knut3", "Ipknuta3", "PortKnuta3",""))
@@ -15,7 +18,6 @@ def main():
 
     #print(db.EditUser("Knut3","Knut3", "Ipknuta5", "PortKnuta3","nowy com"))
     #print(db.EditUser("Knut4","Knut4", "Ipknuta4", "PortKnuta4", "knucica4",))
-    db.printDatabase()
     db.LoadDatabaseFromFile()
 
 

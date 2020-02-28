@@ -1,14 +1,14 @@
 import os
 
+class Database:
 
-# d = {"Baltimore Ravens": [13, 3]}
-# d["Baltimore Ravens"][0] += 1
-# print d
-# {"Baltimore Ravens": [14, 3]}
+    def __init__(self):
+        self.databasePath = "config\\database.lpm"
+        self.separator = "<SEPARATOR>"
 
-class database:
-    saved_user = {}  # saved user name, ip, port
+    databasePath = "config\\database.lpm"
     separator = "<SEPARATOR>"
+    saved_user = {}  # saved user name, ip, port
 
     def checkIfUserExist(self, username):
         if username in self.saved_user:
@@ -40,7 +40,7 @@ class database:
                 self.saved_user[new_username] = [new_ip, new_port, new_comment]
                 if self.checkIfUserExist(new_username):
                     self.SaveDatabaseToFile()
-                    return "Operation Succesfull"
+                    return "User Added"
         return "Operation failed"
 
     def EditUser(self, old_username, new_username, new_ip, new_port, new_comment):
@@ -54,22 +54,21 @@ class database:
 
         result = self.AddUser(new_username, new_ip, new_port, new_comment)
 
-        if result == "Operation Succesfull":
+        if result == "User Added":
             self.SaveDatabaseToFile()
             return "Operation Successfull"
         else:
             result = self.AddUser(backup[0], backup[1], backup[2], backup[3])
-            if result != "Operation Succesfull":  # if backup cannot be loaded, load a backup from file
+            if result != "User Added":  # if backup cannot be loaded, load a backup from file
                 print("Fatal error editing entry! Reloading backup from file")
                 self.LoadDatabaseFromFile()
                 return "Operation Failed. No changes"
 
     def LoadDatabaseFromFile(self):
 
-        dbFile = open("config\\database.lpm", "r")
+        dbFile = open(self.databasePath, "r")
 
         self.saved_user.clear()
-        print("KNUKNUT")
         while True:
             line = dbFile.readline()
             if len(line) > 0:
@@ -79,15 +78,15 @@ class database:
             else:
                 break
         self.printDatabase()
-        print("Load:Finnished loading")
+        print("LoadDatabaseFromFile:Loaded")
 
     def SaveDatabaseToFile(self):
 
-        dbFile = open("config\\database.lpm", "w")
+        dbFile = open(self.databasePath, "w")
 
         for i in self.saved_user:
             dbFile.write(i + self.separator)
             list = self.saved_user.get(i)
             dbFile.write(list[0] + self.separator + list[1] + self.separator + list[2] + "\n")
         dbFile.close()
-        print("Save:Test")
+        print("SaveDatabaseToFile:Saved")
