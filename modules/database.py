@@ -7,7 +7,6 @@ class Database:
         self.separator = "<SEPARATOR>"
 
     databasePath = "config\\database.lpm"
-    separator = "<SEPARATOR>"
     saved_user = {}  # saved user name, ip, port
 
     def checkIfUserExist(self, username):

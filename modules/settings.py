@@ -21,6 +21,8 @@ class Settings:
         self.settings["colorScheme"] = "dark"
         self.settings["serverIp"] = "192.168.1.3"
         self.settings["serverPort"] = "50000"
+        self.settings["clientAutostart"] = "false"
+        self.settings["ServerAutostart"] = "true"
 
     def saveSettingsToFile(self):
         print("Saving settings to file")

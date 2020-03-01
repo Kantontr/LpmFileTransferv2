@@ -12,25 +12,20 @@ class ServerConnection:
         self.createConnection()
         self.waitForConnection()
 
-    defaultSaveFilePath = None
     PACKET_SIZE = 1024
     separator = "<SEPARATOR>"
-    connection_ip = None
-    connection_port = None
-    s = None
-    sock = None
-    addr = None
 
     def createConnection(self):
         self.s = socket.socket()  # Create a socket object
         self.s.bind((self.connection_ip, self.connection_port))  # Bind to the port
-        self.s.listen(10)  # Now wait for client connection.
 
     def waitForConnection(self):
-        print ('Server listening....')
-        self.sock, self.addr = self.s.accept()
-        print("User connected at: {}".format(self.addr))
-        self.handleIncomingMessage()
+        while True:
+            self.s.listen(10)  # Now wait for client connection.
+            print ('Server listening....')
+            self.sock, self.addr = self.s.accept()
+            print("User connected at: {}".format(self.addr))
+            self.handleIncomingMessage()
 
     def handleIncomingMessage(self):
         while True:
@@ -41,17 +36,11 @@ class ServerConnection:
             message = str(received)
 
             receivedMessage = message.split(self.separator)
-            receivedMessage[0] = receivedMessage[0][2:]  # delete "b from message
+            mode = receivedMessage[0][2:] # delete "b from message
 
-            print ("First arg: {}".format(receivedMessage[0]))
-
-            if len(receivedMessage)==4:
-                print("MSG= {} {} {} {}".format(receivedMessage[0], int(receivedMessage[1]), receivedMessage[2],
-                                            receivedMessage[3]))
-
-            if receivedMessage[0] == "-f":
+            if mode == "-File":
                 self.receiveFile(int(receivedMessage[1]), receivedMessage[2], receivedMessage[3])
-            elif receivedMessage[0] == "CloseSocket'":
+            elif mode == "CloseSocket":
                 self.endConnection()
                 return
 
@@ -77,16 +66,17 @@ class ServerConnection:
                 if bytes_received >= filesize:
                     print('Successfully got the file')
                     f.close()
-                    return
+                    return True
 
         f.close()
         print('Successfully got the file')
         return True
 
     def progressBar(self, bytesSent, baseSize):
-        v1 = round((bytesSent / baseSize) * 100, 1)
-        print("\rProgress: {}/{} mb sent,{}%".format(bytesSent, baseSize, v1), end="\r")
+        percentage = round((bytesSent / baseSize) * 100, 1)
+        print("\rProgress: {}/{} mb sent,{}%".format(bytesSent, baseSize, percentage), end="\r")
 
     def endConnection(self):
         print("Connection with {} closed".format(self.addr))
         self.s.close()
+        self.createConnection()

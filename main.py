@@ -21,7 +21,7 @@ def main():
     # db.LoadDatabaseFromFile()
     testClient = ClassClientConnection.ClientConnection("komp2", "192.168.1.3", "50001")
     testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v.mp4", "")
-    # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v2.mp4", "")
+    testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v2.mp4", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v3.mp4", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v4.mp4", "")
     testClient.endConnection()

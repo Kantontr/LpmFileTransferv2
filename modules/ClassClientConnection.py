@@ -28,16 +28,13 @@ class ClientConnection:
 
     def findFileNameFromPath(self, file_path):
         list = file_path.split("\\")
-        filename = list[-1]
+        filename = list[-1] #last element of the list
         return filename
 
     def sendFile(self, filepath, dirpath):
         filename = self.findFileNameFromPath(filepath)
         filesize = int(os.path.getsize(filepath))
-        sendmode = "-f"  # sendmode = file
-
-        print("File size: {} mb".format(round(filesize / 1000000, 2)))
-        print("sending file name: {}".format(filename))
+        sendmode = "-File"
         messagetosend = str(sendmode + self.separator + str(
             filesize) + self.separator + filename + self.separator + dirpath + self.separator)
         msg = messagetosend.encode('utf-8')
@@ -69,6 +66,7 @@ class ClientConnection:
         time.sleep(2)
 
     def endConnection(self):
-        self.s.send("CloseSocket".encode('utf-8'))
+        msg = "CloseSocket" + self.separator
+        self.s.send(msg.encode('utf-8'))
         print ("Connection with {} closed".format(self.connection_ip))
         self.s.close()
