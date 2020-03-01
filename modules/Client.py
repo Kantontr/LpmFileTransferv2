@@ -8,6 +8,10 @@ import time
 PACKET_SIZE = 1024
 SEPARATOR = "<SEPARATOR>"
 
+
+
+
+
 def find_file_name_from_path(file_path):
     filename = ""
 
