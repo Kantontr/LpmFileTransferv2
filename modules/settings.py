@@ -22,7 +22,9 @@ class Settings:
         self.settings["serverIp"] = "192.168.1.3"
         self.settings["serverPort"] = "50000"
         self.settings["clientAutostart"] = "false"
-        self.settings["ServerAutostart"] = "true"
+        self.settings["serverAutostart"] = "true"
+		self.settings["checkFileIntegrity"] = "true"
+		self.settings["serverRequestTimeout"] = "5"
 
     def saveSettingsToFile(self):
         print("Saving settings to file")
