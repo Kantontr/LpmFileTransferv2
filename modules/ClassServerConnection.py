@@ -14,8 +14,13 @@ class ServerConnection:
         self.createConnection()
         self.waitForConnection()
 
+    def __del__(self):
+        s.close()
+
+
     PACKET_SIZE = 1024
     separator = "<SEPARATOR>"
+    valTimeout = 5
 
     def createConnection(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
@@ -42,23 +47,27 @@ class ServerConnection:
             message = str(received)
 
             receivedMessage = message.split(self.separator)
-            mode = receivedMessage[0][2:]  # delete "b from message
+            mode = receivedMessage[0][2:]  # delete b" from message
+            print ("Message inbound {}".format(receivedMessage))
+            print ("Mode: {}".format(mode))
 
             if mode == "-File":
                 self.receiveFile(int(receivedMessage[1]), receivedMessage[2], receivedMessage[3])
             elif mode == "CloseSocket":
                 self.endConnection()
                 return
+            elif mode == "ConnectionCheck":
+                print ("got connection check request")
+                self.sendMessage("ConnectionEstablished")
 
             print ('Server listening....')
 
     def receiveFile(self, filesize, filename, dirpath):
         print("Receiving file!Size: {}, Name: {}, Dir: {}".format(filesize, filename, dirpath))
-
         bytes_received = 0
         save_file_path = self.defaultSaveFilePath + dirpath + "\\" + filename
 
-        self.sendMessage("ready")
+        self.sendMessage("ready") #sends message to client to begin transfer
         with open(save_file_path, 'wb') as f:
             print('File opened. Beginning to save\n')
             while True:
@@ -85,7 +94,6 @@ class ServerConnection:
     def progressBar(self, bytesSent, baseSize):
         percentage = (bytesSent / baseSize) * 100
         percentage = round(percentage, 1)
-        # print ("{}% Done".format(percentage), end="\r")
 
         if baseSize < 1000000:  # smaller than 1mb
             divid = 1000
@@ -103,16 +111,16 @@ class ServerConnection:
             print("\rProgress: {}/{} {} sent,{}%".format(val1, val2, unit, percentage), end="\r")
 
     def checkFileIntegrity(self, filename):
-        md5Server = self.getmd5(filename)
+        md5Server = self.getmd5(filename) #gen md5
 
         timeout = 0
-        while timeout < 5:
+        while timeout < self.valTimeout: #wait for client to send its md5 hash
             data = self.sock.recv(1024)
             if data:
-                md5Client = data.decode()
+                md5Client = data.decode() #get md5 from client
                 if data:
                     print ("Expecting {} got {}".format(md5Server,md5Client))
-                if md5Client == md5Server:
+                if md5Client == md5Server:      #compare md5 hashes
                     print ("MD5 match")
                     return True
                 else:

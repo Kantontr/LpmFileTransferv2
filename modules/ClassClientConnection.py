@@ -10,28 +10,32 @@ class ClientConnection:
         self.connection_name = name
         self.connection_ip = ip
         self.connection_port = port
-        self.createConnection()
+        if self.createConnection():
+            self.s.settimeout(self.valTimeout)
+            if not self.checkConnection():
+                self.endConnection()
+
+    def __del__(self):
+        print ("Deconstructor called. Ending connection with {}:{}".format(self.connection_ip, self.connection_port))
 
     PACKET_SIZE = 1024
     separator = "<SEPARATOR>"
-    connection_name = None
-    connection_ip = None
-    connection_port = None
     s = None
-    valTimeout = 5
+    valTimeout = 10.0
 
     def createConnection(self):
-        # print ("file_path: {}".format(file_path))
-        print ("Connection ip: {}".format(self.connection_ip))
-        print ("Connection port: {}".format(self.connection_port))
-
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.connect((self.connection_ip, int(self.connection_port)))
+        try:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.s.connect((self.connection_ip, int(self.connection_port)))
+            print ("Connection with {}:{} initialized".format(self.connection_ip, self.connection_port))
+            return True
+        except:
+            print ("Connection with {}:{}  could not be initialized".format(self.connection_ip, self.connection_port))
+            return False
 
     def findFileNameFromPath(self, file_path):
         list = file_path.split("\\")
-        filename = list[-1]  # last element of the list
-        return filename
+        return list[-1]  # last element of the list
 
     def sendFile(self, filepath, dirpath):
         filename = self.findFileNameFromPath(filepath)
@@ -40,7 +44,6 @@ class ClientConnection:
         messagetosend = str(sendmode + self.separator + str(
             filesize) + self.separator + filename + self.separator + dirpath + self.separator)
         msg = messagetosend.encode('utf-8')
-        # print("sending: {}".format(msg))
         self.s.send(msg)
 
         print ("==============================================")
@@ -55,18 +58,18 @@ class ClientConnection:
 
         filetosend = open(filepath, 'rb')
         line = filetosend.read(self.PACKET_SIZE)
-
         bytes_sent = 0
+
         while line:
-            self.s.sendall(line)
-            bytes_sent += len(line)
-            self.progressBar(bytes_sent, filesize)
-            line = filetosend.read(self.PACKET_SIZE)
+            self.s.sendall(line)  # Send line
+            bytes_sent += len(line)  # Add amount ob bytes sent to counter
+            self.progressBar(bytes_sent, filesize)  # update progress bar
+            line = filetosend.read(self.PACKET_SIZE)  # get new line from file
         filetosend.close()
 
-        self.s.sendall(self.getmd5(filepath).encode())
+        self.s.sendall(self.getmd5(filepath).encode())  # send md5 hash to server
 
-        if self.waitForServer("Succes"):
+        if self.waitForServer("Succes"):  # wait for server to confirm md5 hash
             return True
         else:
             print ("Error transfering file")
@@ -75,7 +78,6 @@ class ClientConnection:
     def progressBar(self, bytesSent, baseSize):
         percentage = (bytesSent / baseSize) * 100
         percentage = round(percentage, 1)
-        # print ("{}% Done".format(percentage), end="\r")
 
         if baseSize < 1000000:  # smaller than 1mb
             divid = 1000
@@ -93,19 +95,15 @@ class ClientConnection:
             print("\rProgress: {}/{} {} sent,{}%".format(val1, val2, unit, percentage), end="\r")
 
     def waitForServer(self, keyword):
-
-        timeout = 0
-        while timeout < self.valTimeout:
+        try:
             msg = self.s.recv(self.PACKET_SIZE)
+            print ("Waiting for server message: {}".format(keyword))
             if len(msg) != 0:
                 print (msg.decode())
                 if msg.decode() == keyword:
                     return True
-            time.sleep(1)
-            timeout += 1
-
-        print ("Connection timeout!")
-        return False
+        except:
+            print ("Connection timeout with {}:{}".format(self.connection_ip, self.connection_port))
 
     def getmd5(self, filepath):
         hash_md5 = hashlib.md5()
@@ -116,8 +114,28 @@ class ClientConnection:
                "Client md5 for {}: {}".format(filepath, hash_md5.hexdigest()))
         return hash_md5.hexdigest()
 
+    def checkConnection(self):
+        print ("Checking connection")
+        try:
+            time.sleep(1)
+            self.s.send(str("ConnectionCheck" + self.separator).encode())
+            if self.waitForServer("ConnectionEstablished"):
+                print ("Connection with {} {} established".format(self.connection_ip, self.connection_port))
+                return True
+
+            else:
+                print ("An error occured. Connection is not established")
+                return False
+
+        except:
+            print ("An except error occured. Connection is not established")
+            return False
+
     def endConnection(self):
         msg = "CloseSocket" + self.separator
-        self.s.send(msg.encode('utf-8'))
-        print ("Connection with {} closed".format(self.connection_ip))
-        self.s.close()
+        try:
+            self.s.send(msg.encode('utf-8'))
+            self.s.close()
+            print ("Connection with {} closed".format(self.connection_ip))
+        except:
+            print ("Connection with {} already closed".format(self.connection_ip))
