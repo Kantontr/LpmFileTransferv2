@@ -5,7 +5,7 @@ from Crypto.Hash import SHA256
 from Crypto import Random
 
 
-class LPM_Encryptor:
+class LPMAesEncrypt:
     password = ""
     key = ""
     s_mode = "-s"
