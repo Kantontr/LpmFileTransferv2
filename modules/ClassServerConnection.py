@@ -3,6 +3,7 @@ import os
 import time
 import sys
 import hashlib
+from . import LPMRsaEncrypt
 
 
 class ServerConnection:
@@ -10,17 +11,19 @@ class ServerConnection:
     def __init__(self, ip, port, SaveFilePath):
         self.connection_ip = ip  # localhost?
         self.connection_port = port
+        self.connection_encrypted = "false"
         self.defaultSaveFilePath = SaveFilePath
+        self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt()
         self.createConnection()
+        self.s.settimeout(self.valTimeout)
         self.waitForConnection()
 
     def __del__(self):
         s.close()
 
-
     PACKET_SIZE = 1024
     separator = "<SEPARATOR>"
-    valTimeout = 5
+    valTimeout = 20.0
 
     def createConnection(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
@@ -37,6 +40,32 @@ class ServerConnection:
                 self.handleIncomingMessage()
         except:
             self.endConnection()
+
+    def encryptConnection(self):
+
+        self.connection_encrypted = "true"
+
+        # Send server's public key to client
+        self.sock.send(self.rsaCrypt.getPublicKey().encode())
+        print ("Server public key sent {}".format(self.rsaCrypt.getPublicKey()))
+
+
+        # Wait for Client's public key
+        clientPublicKey = self.sock.recv(self.PACKET_SIZE)
+        print ("Client public key received {}".format(clientPublicKey.decode()))
+        self.rsaCrypt.setEncryptor(clientPublicKey.decode())
+        # Wait for encoded hand shake
+        msgEnc = self.sock.recv(self.PACKET_SIZE)
+        msg = self.rsaCrypt.decryptLine(msgEnc)
+        print ("Got {} from client".format(msg))
+
+        if msg == "clienthandshake":
+            print ("Accepting client's handshake")
+            self.sock.send(self.rsaCrypt.encryptLine(b'Returning handshake'))
+            print ("Returning handshake. \nConnection established")
+            return True
+        else:
+            return False
 
     def handleIncomingMessage(self):
         while True:
@@ -59,6 +88,10 @@ class ServerConnection:
             elif mode == "ConnectionCheck":
                 print ("got connection check request")
                 self.sendMessage("ConnectionEstablished")
+            elif mode == "EncryptConnection'":
+                print ("Encrypting connection")
+                self.encryptConnection()
+
 
             print ('Server listening....')
 
@@ -67,7 +100,7 @@ class ServerConnection:
         bytes_received = 0
         save_file_path = self.defaultSaveFilePath + dirpath + "\\" + filename
 
-        self.sendMessage("ready") #sends message to client to begin transfer
+        self.sendMessage("ready")  # sends message to client to begin transfer
         with open(save_file_path, 'wb') as f:
             print('File opened. Beginning to save\n')
             while True:
@@ -111,16 +144,16 @@ class ServerConnection:
             print("\rProgress: {}/{} {} sent,{}%".format(val1, val2, unit, percentage), end="\r")
 
     def checkFileIntegrity(self, filename):
-        md5Server = self.getmd5(filename) #gen md5
+        md5Server = self.getmd5(filename)  # gen md5
 
         timeout = 0
-        while timeout < self.valTimeout: #wait for client to send its md5 hash
+        while timeout < self.valTimeout:  # wait for client to send its md5 hash
             data = self.sock.recv(1024)
             if data:
-                md5Client = data.decode() #get md5 from client
+                md5Client = data.decode()  # get md5 from client
                 if data:
-                    print ("Expecting {} got {}".format(md5Server,md5Client))
-                if md5Client == md5Server:      #compare md5 hashes
+                    print ("Expecting {} got {}".format(md5Server, md5Client))
+                if md5Client == md5Server:  # compare md5 hashes
                     print ("MD5 match")
                     return True
                 else:

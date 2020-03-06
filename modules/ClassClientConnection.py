@@ -3,6 +3,7 @@ import socket
 import sys
 import time
 import hashlib
+from . import LPMRsaEncrypt
 
 
 class ClientConnection:
@@ -10,10 +11,18 @@ class ClientConnection:
         self.connection_name = name
         self.connection_ip = ip
         self.connection_port = port
+        self.connection_encrypted = "true"
+        self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt()
         if self.createConnection():
             self.s.settimeout(self.valTimeout)
+            if self.connection_encrypted == "true":
+                try:
+                    self.encryptConnection()
+                except:
+                    pass
             if not self.checkConnection():
                 self.endConnection()
+
 
     def __del__(self):
         print ("Deconstructor called. Ending connection with {}:{}".format(self.connection_ip, self.connection_port))
@@ -21,7 +30,7 @@ class ClientConnection:
     PACKET_SIZE = 1024
     separator = "<SEPARATOR>"
     s = None
-    valTimeout = 10.0
+    valTimeout = 20.0
 
     def createConnection(self):
         try:
@@ -36,6 +45,34 @@ class ClientConnection:
     def findFileNameFromPath(self, file_path):
         list = file_path.split("\\")
         return list[-1]  # last element of the list
+
+    def encryptConnection(self):
+
+        self.s.send(b'EncryptConnection')
+
+        # waiting for server's public key
+        serverPublicKey = self.s.recv(self.PACKET_SIZE)
+        print ("Server public key received {}".format(serverPublicKey.decode()))
+        self.rsaCrypt.setEncryptor(serverPublicKey.decode())
+
+
+        clientPublicKey = self.rsaCrypt.getPublicKey()
+        # sending client's public key to Server
+        self.s.send(clientPublicKey.encode())
+        print ("Client public key sent =  {}".format(clientPublicKey))
+
+        # send encoded handshake
+        msg = self.rsaCrypt.encryptLine(b'clienthandshake')
+        self.s.send(msg)
+        print ("Encrypted handshake sent to server")
+        msgEnc = self.s.recv(self.PACKET_SIZE)
+        msg = self.rsaCrypt.decryptLine(msgEnc)
+
+        if msg == "Returning handshake":
+            print ("Server returned handshake.\nConnection Established")
+            return True
+        else:
+            return False
 
     def sendFile(self, filepath, dirpath):
         filename = self.findFileNameFromPath(filepath)
