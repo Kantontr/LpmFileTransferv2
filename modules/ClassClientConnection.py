@@ -89,15 +89,15 @@ class ClientConnection:
             filesize) + self.separator + filename + self.separator + dirpath + self.separator)
         self.sendRawMessage(messagetosend)
 
-        print ("==============================================")
-        print ("Starting the transfer")
-        print ("==============================================")
+        print ("===========================")
+        print ("Initializing transfer")
+        print ("===========================")
 
         if not self.waitForServer("ready"):
             print ("Server did not respond in time. Transfer aborted")
             return False
         else:
-            print ("transfer begins")
+            print ("Starting the transfer")
 
         filetosend = open(filepath, 'rb')
         line = filetosend.read(self.PACKET_SIZE)

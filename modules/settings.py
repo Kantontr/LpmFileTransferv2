@@ -26,6 +26,7 @@ class Settings:
         self.settings["checkFileIntegrity"] = "true"
         self.settings["serverRequestTimeout"] = "5"
         self.settings["connectionEncrypted"] = "true"
+        self.settings["allowForCommands"] = "false"
 
     def saveSettingsToFile(self):
         print("Saving settings to file")
