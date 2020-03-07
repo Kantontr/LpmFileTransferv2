@@ -1,7 +1,7 @@
 # LpmFileTransferv2
 
 TODO:
-  - check input line for <separator> and len()
+  - check input line for < separator > and len()
   - AES for files
   - messenger
   - message log
