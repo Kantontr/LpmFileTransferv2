@@ -1,5 +1,20 @@
 # LpmFileTransferv2
-//Zapisz zmiany:
-git add .
-git commit -m "komentarz"
-git push -u origin master
+
+TODO:
+  - check input line for <separator> and len()
+  - AES for files
+  - messenger
+  - message log
+  - GUI
+  - pass settings to server/client
+  - send multiple files
+  - send commands (+ settings)
+  - Multithreading (decryption)
+  
+Done: 
+  - RSA + AES class
+  - Sockets
+  - Encrypted Connection
+  - MD5 hash for files
+  - Database
+  
