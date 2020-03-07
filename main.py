@@ -32,15 +32,16 @@ def main():
     testClient = ClassClientConnection.ClientConnection("komp2", "192.168.1.3", "50001")
     # try:
     testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v.mp4", "")
-    # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v2.jpg", "")
+    testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v2.jpg", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v4.txt", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v5.txt", "")
-    # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v3.jpg", "")
+    testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v3.jpg", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\LPM_TCP.exe", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v4.mp4", "")
     # finally:
     # testClient.endConnection()
-    print ("Main zyje")
+    print ("Main.py: I'm Alive!")
+
 
 # except:
 #   print ("Connection error")

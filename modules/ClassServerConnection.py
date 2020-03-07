@@ -9,7 +9,7 @@ from . import LPMRsaEncrypt
 class ServerConnection:
 
     def __init__(self, ip, port, SaveFilePath):
-        self.connection_ip = ip  # localhost?
+        self.connection_ip = ip
         self.connection_port = port
         self.connection_encrypted = "false"
         self.defaultSaveFilePath = SaveFilePath
@@ -21,8 +21,8 @@ class ServerConnection:
     def __del__(self):
         s.close()
 
-    PACKET_SIZE = 1024
-    separator = "<SEPARATOR>"
+    PACKET_SIZE = 2048
+    separator = "<S3P4>"
     valTimeout = 20.0
 
     def createConnection(self):
@@ -32,8 +32,12 @@ class ServerConnection:
 
     def waitForConnection(self):
         try:
-            while True:
-                self.s.listen(10)  # Now wait for client connection.
+            while True:  # Keep server on until turned off by user
+                # Reset values from previous connection:
+                self.connection_encrypted = "false"
+                self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt()
+                # wait for client connection.
+                self.s.listen(10)
                 print ('Server listening....')
                 self.sock, self.addr = self.s.accept()
                 print("User connected at: {}".format(self.addr))
@@ -43,17 +47,15 @@ class ServerConnection:
 
     def encryptConnection(self):
 
-        self.connection_encrypted = "true"
-
         # Send server's public key to client
         self.sock.send(self.rsaCrypt.getPublicKey().encode())
-        print ("Server public key sent {}".format(self.rsaCrypt.getPublicKey()))
-
+        print ("Server public key sent.")
 
         # Wait for Client's public key
         clientPublicKey = self.sock.recv(self.PACKET_SIZE)
-        print ("Client public key received {}".format(clientPublicKey.decode()))
+        print ("Client public key received!")
         self.rsaCrypt.setEncryptor(clientPublicKey.decode())
+
         # Wait for encoded hand shake
         msgEnc = self.sock.recv(self.PACKET_SIZE)
         msg = self.rsaCrypt.decryptLine(msgEnc)
@@ -61,22 +63,24 @@ class ServerConnection:
 
         if msg == "clienthandshake":
             print ("Accepting client's handshake")
-            self.sock.send(self.rsaCrypt.encryptLine(b'Returning handshake'))
+            self.sock.send(self.rsaCrypt.encryptLine("Returning handshake"))
             print ("Returning handshake. \nConnection established")
+            self.connection_encrypted = "true"
             return True
         else:
             return False
 
     def handleIncomingMessage(self):
         while True:
-            received = self.sock.recv(1024)
-            if not received:
-                time.sleep(0.2)
-                continue
-            message = str(received)
+            received = self.sock.recv(self.PACKET_SIZE)
+
+            if self.connection_encrypted == "true":
+                message = self.rsaCrypt.decryptLine(received)
+            else:
+                message = str(received.decode())
 
             receivedMessage = message.split(self.separator)
-            mode = receivedMessage[0][2:]  # delete b" from message
+            mode = receivedMessage[0]  # delete b" from message
             print ("Message inbound {}".format(receivedMessage))
             print ("Mode: {}".format(mode))
 
@@ -88,26 +92,29 @@ class ServerConnection:
             elif mode == "ConnectionCheck":
                 print ("got connection check request")
                 self.sendMessage("ConnectionEstablished")
-            elif mode == "EncryptConnection'":
+            elif mode == "EncryptConnection":
                 print ("Encrypting connection")
                 self.encryptConnection()
-
 
             print ('Server listening....')
 
     def receiveFile(self, filesize, filename, dirpath):
-        print("Receiving file!Size: {}, Name: {}, Dir: {}".format(filesize, filename, dirpath))
+        print("Receiving file!Size: {}b, Name: {}, Dir: {}".format(filesize, filename, dirpath))
         bytes_received = 0
         save_file_path = self.defaultSaveFilePath + dirpath + "\\" + filename
 
-        self.sendMessage("ready")  # sends message to client to begin transfer
+        self.sendRawMessage("ready")  # sends message to client to begin transfer
         with open(save_file_path, 'wb') as f:
             print('File opened. Beginning to save\n')
             while True:
 
-                data = self.sock.recv(1024)
+                data = self.sock.recv(self.PACKET_SIZE)
                 if not data:
                     break
+
+                # if self.connection_encrypted == "true":
+                #     data = self.rsaCrypt.decryptLine(data)
+
                 f.write(data)
                 bytes_received += len(data)
 
@@ -115,11 +122,13 @@ class ServerConnection:
                 if bytes_received >= filesize:
                     f.close()
                     if self.checkFileIntegrity(save_file_path):
-                        self.sendMessage("Succes")
+                        self.sendRawMessage("Succes")
+                        # self.sendMessage("Succes")
                         print('Successfully got the file\n')
                         return True
                     else:
-                        self.sendMessage("Fail")
+                        self.sendRawMessage("Fail")
+                        # self.sendMessage("Fail")
                         print('Error getting the file\n')
         f.close()
         return False
@@ -167,6 +176,16 @@ class ServerConnection:
     def sendMessage(self, message):
         print("Sending {} to {}".format(message, self.addr))
         self.sock.sendall(message.encode())
+
+    def sendRawMessage(self, message):
+
+        if self.connection_encrypted == "true":
+            message = self.rsaCrypt.encryptLine(message)
+
+        if isinstance(message, str):
+            message = message.encode()
+
+        self.sock.send(message)
 
     def getmd5(self, filepath):
         hash_md5 = hashlib.md5()

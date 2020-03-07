@@ -20,15 +20,14 @@ class ClientConnection:
                     self.encryptConnection()
                 except:
                     pass
-            if not self.checkConnection():
-                self.endConnection()
-
+            # if not self.checkConnection():
+            #    self.endConnection()
 
     def __del__(self):
         print ("Deconstructor called. Ending connection with {}:{}".format(self.connection_ip, self.connection_port))
 
-    PACKET_SIZE = 1024
-    separator = "<SEPARATOR>"
+    PACKET_SIZE = 2048
+    separator = "<S3P4>"
     s = None
     valTimeout = 20.0
 
@@ -52,17 +51,16 @@ class ClientConnection:
 
         # waiting for server's public key
         serverPublicKey = self.s.recv(self.PACKET_SIZE)
-        print ("Server public key received {}".format(serverPublicKey.decode()))
+        print ("Server public key received!")
         self.rsaCrypt.setEncryptor(serverPublicKey.decode())
-
 
         clientPublicKey = self.rsaCrypt.getPublicKey()
         # sending client's public key to Server
         self.s.send(clientPublicKey.encode())
-        print ("Client public key sent =  {}".format(clientPublicKey))
+        print ("Client public key sent.")
 
         # send encoded handshake
-        msg = self.rsaCrypt.encryptLine(b'clienthandshake')
+        msg = self.rsaCrypt.encryptLine("clienthandshake")
         self.s.send(msg)
         print ("Encrypted handshake sent to server")
         msgEnc = self.s.recv(self.PACKET_SIZE)
@@ -74,21 +72,29 @@ class ClientConnection:
         else:
             return False
 
+    def sendRawMessage(self, message):
+
+        if self.connection_encrypted == "true":
+            message = self.rsaCrypt.encryptLine(message)
+
+        if isinstance(message, str):
+            message = message.encode()
+
+        self.s.send(message)
+
     def sendFile(self, filepath, dirpath):
         filename = self.findFileNameFromPath(filepath)
         filesize = int(os.path.getsize(filepath))
-        sendmode = "-File"
-        messagetosend = str(sendmode + self.separator + str(
+        messagetosend = str("-File" + self.separator + str(
             filesize) + self.separator + filename + self.separator + dirpath + self.separator)
-        msg = messagetosend.encode('utf-8')
-        self.s.send(msg)
+        self.sendRawMessage(messagetosend)
 
         print ("==============================================")
         print ("Starting the transfer")
         print ("==============================================")
 
         if not self.waitForServer("ready"):
-            print ("Serer did not respond in time. Transfer aborted")
+            print ("Server did not respond in time. Transfer aborted")
             return False
         else:
             print ("transfer begins")
@@ -98,6 +104,9 @@ class ClientConnection:
         bytes_sent = 0
 
         while line:
+            # if self.connection_encrypted == "true":
+            #     line = self.rsaCrypt.encryptLine(line)
+
             self.s.sendall(line)  # Send line
             bytes_sent += len(line)  # Add amount ob bytes sent to counter
             self.progressBar(bytes_sent, filesize)  # update progress bar
@@ -134,11 +143,18 @@ class ClientConnection:
     def waitForServer(self, keyword):
         try:
             msg = self.s.recv(self.PACKET_SIZE)
-            print ("Waiting for server message: {}".format(keyword))
-            if len(msg) != 0:
-                print (msg.decode())
-                if msg.decode() == keyword:
-                    return True
+            if self.connection_encrypted == "true":
+                msg = self.rsaCrypt.decryptLine(msg)
+
+            if not isinstance(msg, str):
+                try:
+                    msg = msg.decode()
+                except:
+                    pass
+
+            print ("Got {} from server".format(msg))
+            if msg == keyword:
+                return True
         except:
             print ("Connection timeout with {}:{}".format(self.connection_ip, self.connection_port))
 

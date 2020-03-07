@@ -4,6 +4,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 import binascii
 
+
 class LPMRsaEncrypt:
 
     def __init__(self):
@@ -13,28 +14,28 @@ class LPMRsaEncrypt:
         self.pubKey = self.keyPair.publickey()
         self.pubKeyPEM = self.pubKey.exportKey()
         self.privKeyPEM = self.keyPair.exportKey()
-
-        self.setEncryptor(self.pubKeyPEM)
+        #self.segmentLen = 86
+        self.setEncryptor(self.getPublicKey())
         self.setDecryptor()
 
-    def setEncryptor(self,pubKey):
+    def setEncryptor(self, pubKey):
         self.encryptor = PKCS1_OAEP.new(RSA.importKey(pubKey))
-        print ("Successfull")
 
     def setDecryptor(self):
         self.decryptor = PKCS1_OAEP.new(self.keyPair)
 
-    def encryptLine(self, line):
+    def encryptLine(self, line):  # gets str or byte returns byte
+
+        if isinstance(line, str):
+            line = line.encode()
+
         encrypted = self.encryptor.encrypt(line)
         return encrypted
 
-    def getPublicKey(self):
-        return str(self.keyPair.publickey().exportKey(format='PEM'), "utf-8")
-        #return self.pubKey
-
     def decryptLine(self, line):
+
         decrypted = self.decryptor.decrypt(line)
         return str(decrypted.decode())
 
-    def getInfo(self):
-        print ("My Pubkey is: {} \n".format(self.pubKey))
+    def getPublicKey(self):
+        return str(self.keyPair.publickey().exportKey(format='PEM'), "utf-8")
