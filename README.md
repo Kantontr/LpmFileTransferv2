@@ -1,5 +1,10 @@
 # LpmFileTransferv2
 
+Requirements:
+- python3 (3.7 used)
+- python get-pip.py
+- pip install pycrypto
+
 TODO:
   - check input line for < separator > and len()
   - AES for files
