@@ -17,4 +17,5 @@ Done:
   - Encrypted Connection
   - MD5 hash for files
   - Database
+  - Settings
   
