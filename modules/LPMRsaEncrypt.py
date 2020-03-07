@@ -7,16 +7,12 @@ import binascii
 
 class LPMRsaEncrypt:
 
-    def __init__(self):
-        self.encryptor = None
-        self.decryptor = None
-        self.keyPair = RSA.generate(1024)
+    def __init__(self,keyLen):
+        self.keyPair = RSA.generate(keyLen)
         self.pubKey = self.keyPair.publickey()
-        self.pubKeyPEM = self.pubKey.exportKey()
-        self.privKeyPEM = self.keyPair.exportKey()
-        #self.segmentLen = 86
         self.setEncryptor(self.getPublicKey())
         self.setDecryptor()
+        # Max message len is 86 if 1024b and 214 if 2048
 
     def setEncryptor(self, pubKey):
         self.encryptor = PKCS1_OAEP.new(RSA.importKey(pubKey))
@@ -33,7 +29,6 @@ class LPMRsaEncrypt:
         return encrypted
 
     def decryptLine(self, line):
-
         decrypted = self.decryptor.decrypt(line)
         return str(decrypted.decode())
 

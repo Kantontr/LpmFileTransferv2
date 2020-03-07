@@ -11,8 +11,12 @@ class ClientConnection:
         self.connection_name = name
         self.connection_ip = ip
         self.connection_port = port
+        self.PACKET_SIZE = 2048
+        self.separator = "<S3P4>"
+        self.valTimeout = 20.0
+        self.s = None
         self.connection_encrypted = "true"
-        self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt()
+        self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt(self.PACKET_SIZE)
         if self.createConnection():
             self.s.settimeout(self.valTimeout)
             if self.connection_encrypted == "true":
@@ -26,10 +30,6 @@ class ClientConnection:
     def __del__(self):
         print ("Deconstructor called. Ending connection with {}:{}".format(self.connection_ip, self.connection_port))
 
-    PACKET_SIZE = 2048
-    separator = "<S3P4>"
-    s = None
-    valTimeout = 20.0
 
     def createConnection(self):
         try:

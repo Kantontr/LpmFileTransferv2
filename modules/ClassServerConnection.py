@@ -11,9 +11,12 @@ class ServerConnection:
     def __init__(self, ip, port, SaveFilePath):
         self.connection_ip = ip
         self.connection_port = port
+        self.PACKET_SIZE = 2048
+        self.separator = "<S3P4>"
+        self.valTimeout = 20.0
         self.connection_encrypted = "false"
         self.defaultSaveFilePath = SaveFilePath
-        self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt()
+        self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt(self.PACKET_SIZE)
         self.createConnection()
         self.s.settimeout(self.valTimeout)
         self.waitForConnection()
@@ -21,9 +24,6 @@ class ServerConnection:
     def __del__(self):
         s.close()
 
-    PACKET_SIZE = 2048
-    separator = "<S3P4>"
-    valTimeout = 20.0
 
     def createConnection(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
@@ -35,10 +35,11 @@ class ServerConnection:
             while True:  # Keep server on until turned off by user
                 # Reset values from previous connection:
                 self.connection_encrypted = "false"
-                self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt()
+                self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt(self.PACKET_SIZE)
                 # wait for client connection.
                 self.s.listen(10)
-                print ('Server listening....')
+                print ('Server listening...')
+                #Creating new connection
                 self.sock, self.addr = self.s.accept()
                 print("User connected at: {}".format(self.addr))
                 self.handleIncomingMessage()
@@ -80,7 +81,7 @@ class ServerConnection:
                 message = str(received.decode())
 
             receivedMessage = message.split(self.separator)
-            mode = receivedMessage[0]  # delete b" from message
+            mode = receivedMessage[0]  # get mode from message
             print ("Message inbound {}".format(receivedMessage))
             print ("Mode: {}".format(mode))
 
@@ -96,7 +97,7 @@ class ServerConnection:
                 print ("Encrypting connection")
                 self.encryptConnection()
 
-            print ('Server listening....')
+            print ('Server listening...')
 
     def receiveFile(self, filesize, filename, dirpath):
         print("Receiving file!Size: {}b, Name: {}, Dir: {}".format(filesize, filename, dirpath))
