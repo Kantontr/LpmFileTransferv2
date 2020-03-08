@@ -2,10 +2,22 @@ import os
 import os.path
 from os import path
 
+from modules import database
+from modules import settings
+from modules import ClassClientConnection
+from modules import ClassServerConnection
+from modules import LPMRsaEncrypt
+from modules import stylesheet
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
+
 class Utility:
 
     def __init__(self):
-        None
+        pass
+        #self.settings = settings.Settings()
+        #self.db = database.Database()
 
     def checkIfDirExist(self,path):
         if path.isdir(path):
@@ -22,3 +34,8 @@ class Utility:
         else:
             print("{} is not a file".format(path))
             return False
+
+
+db = database.Database()
+settings = settings.Settings()
+stylesheet = stylesheet.Stylesheet()

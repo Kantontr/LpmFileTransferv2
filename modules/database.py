@@ -5,10 +5,11 @@ class Database:
 
     def __init__(self):
         self.databasePath = "config\\database.lpm"
+        self.saved_user = {}  # saved user name, ip, port
+        self.databasePath = "config\\database.lpm"
         self.separator = "<SEPARATOR>"
-
-    databasePath = "config\\database.lpm"
-    saved_user = {}  # saved user name, ip, port
+        self.loadDatabaseFromFile()
+        self.printDatabase()
 
     def checkIfUserExist(self, username):
         for i, j in self.saved_user.items():
@@ -86,7 +87,7 @@ class Database:
             line = dbFile.readline()
             if len(line) > 0:
                 list = line.split(self.separator)
-                list[3] = list[3][0:len(list[3]) - 1]
+                list[3] = list[3][0:len(list[3])]
                 self.saved_user[list[0]] = [list[1], list[2], list[3], list[4]]
             else:
                 break

@@ -4,17 +4,28 @@ import os
 import sys
 import time
 
-from modules import database
-from modules import settings
-from modules import ClassClientConnection
-from modules import ClassServerConnection
-from modules import LPMRsaEncrypt
-
+from modules import utility
+# from modules import settings
+# from modules import ClassClientConnection
+# from modules import ClassServerConnection
+# from modules import LPMRsaEncrypt
+from gui import mainWindow
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 def main():
-    Settings = settings.Settings()
+    #from PyQt5 import QtCore, QtGui, QtWidgets
+    #import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = mainWindow.Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
+
+
+
+    settings = settings.Settings()
     db = database.Database()
-    db.loadDatabaseFromFile()
     db.printDatabase()
 
     # test = LPMRsaEncrypt.LPMRsaEncrypt()
