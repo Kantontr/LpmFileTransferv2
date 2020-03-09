@@ -4,6 +4,7 @@ import sys
 import time
 import hashlib
 from . import LPMRsaEncrypt
+from modules import progressbar
 
 
 class ClientConnection:
@@ -16,6 +17,7 @@ class ClientConnection:
         self.valTimeout = 20.0
         self.s = None
         self.connection_encrypted = "true"
+        self.connection_status = "connecting"
         self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt(self.PACKET_SIZE)
         if self.createConnection():
             self.s.settimeout(self.valTimeout)
@@ -23,11 +25,15 @@ class ClientConnection:
                 try:
                     self.encryptConnection()
                 except:
+                    self.connection_status = "error encrypting"
                     pass
+            else:
+                self.connection_status = "Online"
             # if not self.checkConnection():
             #    self.endConnection()
 
     def __del__(self):
+        self.connection_status = "Offline"
         print ("Deconstructor called. Ending connection with {}:{}".format(self.connection_ip, self.connection_port))
 
 
@@ -36,9 +42,11 @@ class ClientConnection:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.s.connect((self.connection_ip, int(self.connection_port)))
             print ("Connection with {}:{} initialized".format(self.connection_ip, self.connection_port))
+            self.connection_status = "Initialised"
             return True
         except:
             print ("Connection with {}:{}  could not be initialized".format(self.connection_ip, self.connection_port))
+            self.connection_status = "error"
             return False
 
     def findFileNameFromPath(self, file_path):
@@ -68,8 +76,10 @@ class ClientConnection:
 
         if msg == "Returning handshake":
             print ("Server returned handshake.\nConnection Established")
+            self.connection_status = "Online"
             return True
         else:
+            self.connection_status = "error"
             return False
 
     def sendRawMessage(self, message):
@@ -102,6 +112,12 @@ class ClientConnection:
         filetosend = open(filepath, 'rb')
         line = filetosend.read(self.PACKET_SIZE)
         bytes_sent = 0
+        from PyQt5.QtWidgets import QApplication, QWidget, QProgressBar
+        self.pb = progressbar.ProgressBar()
+        self.pb.show()
+        self.pb.setText("Sending file","Sending: {}".format(filepath))
+        self.pb.setValue(1)
+
 
         while line:
             # if self.connection_encrypted == "true":
@@ -114,6 +130,7 @@ class ClientConnection:
         filetosend.close()
 
         self.s.sendall(self.getmd5(filepath).encode())  # send md5 hash to server
+        self.pb.close()
 
         if self.waitForServer("Succes"):  # wait for server to confirm md5 hash
             return True
@@ -122,8 +139,11 @@ class ClientConnection:
             return False
 
     def progressBar(self, bytesSent, baseSize):
+
+
         percentage = (bytesSent / baseSize) * 100
         percentage = round(percentage, 1)
+        self.pb.setValue(percentage)
 
         if baseSize < 1000000:  # smaller than 1mb
             divid = 1000
@@ -192,3 +212,5 @@ class ClientConnection:
             print ("Connection with {} closed".format(self.connection_ip))
         except:
             print ("Connection with {} already closed".format(self.connection_ip))
+        finally:
+            self.connection_status = "Offline"

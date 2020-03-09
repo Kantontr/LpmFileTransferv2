@@ -11,15 +11,14 @@ from modules import stylesheet
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-
 class Utility:
 
     def __init__(self):
         pass
-        #self.settings = settings.Settings()
-        #self.db = database.Database()
+        # self.settings = settings.Settings()
+        # self.db = database.Database()
 
-    def checkIfDirExist(self,path):
+    def checkIfDirExist(self, path):
         if path.isdir(path):
             print("{} is a directory".format(path))
             return True
@@ -27,7 +26,7 @@ class Utility:
             print("{} is not a directory".format(path))
             return False
 
-    def checkIfFileExist(self,path):
+    def checkIfFileExist(self, path):
         if path.isfile(path):
             print("{} is a file".format(path))
             return True

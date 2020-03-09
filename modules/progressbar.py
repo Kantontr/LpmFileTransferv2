@@ -4,7 +4,6 @@ import os
 class Stylesheet:
 
     def __init__(self):
-        self.style = {}
         self.dark = {}
         self.dark["background"] = "color:rgb(222,222,222);" \
                                   "background-color: " \
@@ -27,7 +26,6 @@ class Stylesheet:
                             "show-decoration-selected: 1;" \
                             "color:rgb(222,222,222); " \
                             "background-color: rgba(50,50,50,200); " \
-                            "alternate-background-color: rgba(60,60,60,200);"\
                             "border: 2px;" \
                             "border-width: 1px;" \
                             "border-radius: 4px;" \
@@ -64,7 +62,3 @@ class Stylesheet:
                                    "border-color: rgba(0,0,0,1);" \
                                    "color:rgb(222,222,222); " \
                                    "}"
-
-    def setStyle(self,style):
-        if style == "dark":
-            self.style = self.dark

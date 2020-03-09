@@ -6,15 +6,15 @@ import time
 
 from modules import utility
 # from modules import settings
-# from modules import ClassClientConnection
+#from modules import ClassClientConnection
 # from modules import ClassServerConnection
 # from modules import LPMRsaEncrypt
-from gui import mainWindow
+from ui import mainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 def main():
-    #from PyQt5 import QtCore, QtGui, QtWidgets
-    #import sys
+
+    utility.stylesheet.setStyle("dark")
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = mainWindow.Ui_MainWindow()
@@ -24,9 +24,9 @@ def main():
 
 
 
-    settings = settings.Settings()
-    db = database.Database()
-    db.printDatabase()
+    # settings = settings.Settings()
+    # db = database.Database()
+    # db.printDatabase()
 
     # test = LPMRsaEncrypt.LPMRsaEncrypt()
     # enc = test.encryptLine("WikiKnut")
