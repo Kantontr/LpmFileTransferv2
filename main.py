@@ -9,18 +9,21 @@ from modules import utility
 #from modules import ClassClientConnection
 # from modules import ClassServerConnection
 # from modules import LPMRsaEncrypt
-from ui import mainWindow
+from ui import UImainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 def main():
 
     utility.stylesheet.setStyle("dark")
+
     app = QtWidgets.QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
     MainWindow = QtWidgets.QMainWindow()
-    ui = mainWindow.Ui_MainWindow()
+    ui = UImainWindow.Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
 
 
 
@@ -40,18 +43,18 @@ def main():
 
     # db.LoadDatabaseFromFile()
     # try:
-    testClient = ClassClientConnection.ClientConnection("komp2", "192.168.1.3", "50001")
+    #testClient = ClassClientConnection.ClientConnection("komp2", "192.168.1.3", "50001")
     # try:
-    testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v.mp4", "")
-    testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v2.jpg", "")
+    #testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v.mp4", "")
+    #testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v2.jpg", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v4.txt", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v5.txt", "")
-    testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v3.jpg", "")
+    #testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v3.jpg", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\LPM_TCP.exe", "")
     # testClient.sendFile("C:\\Users\\kanton\\Desktop\\PythonFrom\\v4.mp4", "")
     # finally:
     # testClient.endConnection()
-    print ("Main.py: I'm Alive!")
+    #print ("Main.py: I'm Alive!")
 
 
 # except:

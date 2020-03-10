@@ -27,7 +27,7 @@ class Stylesheet:
                             "show-decoration-selected: 1;" \
                             "color:rgb(222,222,222); " \
                             "background-color: rgba(50,50,50,200); " \
-                            "alternate-background-color: rgba(60,60,60,200);"\
+                            "alternate-background-color: rgba(60,60,60,200);" \
                             "border: 2px;" \
                             "border-width: 1px;" \
                             "border-radius: 4px;" \
@@ -39,12 +39,12 @@ class Stylesheet:
                             "}" \
                             "QTreeWidget:item:hover {" \
                             "background-color: rgba(90,90,90,200)" \
-                            "}"\
-                            "QHeaderView::section {"\
+                            "}" \
+                            "QHeaderView::section {" \
                             "background-color: rgba(50,50,50,200);" \
                             "border: 1px;" \
-                            "color:rgba(50,50,50,200); "\
-                            "font-size: 1px;"\
+                            "color:rgba(50,50,50,200); " \
+                            "font-size: 1px;" \
                             "}"
         self.dark["lineEdit"] = "QLineEdit {" \
                                 "background-color: rgba(80,80,80,200); " \
@@ -64,7 +64,9 @@ class Stylesheet:
                                    "border-color: rgba(0,0,0,1);" \
                                    "color:rgb(222,222,222); " \
                                    "}"
+        self.dark["comboBox"] = "background-color: rgba(80,80,80,200); " \
+                                "color:rgb(222,222,222);"
 
-    def setStyle(self,style):
+    def setStyle(self, style):
         if style == "dark":
             self.style = self.dark

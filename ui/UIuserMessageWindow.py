@@ -14,11 +14,11 @@ from modules import ClassClientConnection
 from modules import utility
 
 
-class Ui_Dialog(object):
+class Ui_Dialog_UserMsg(object):
 
     def setupUi(self, Dialog, username):
         self.username = username
-        self.style = utility.stylesheet.style["background"]
+        #self.style = utility.stylesheet.style["background"]
         self.connectionStatus = "connecting"
 
         # msg = QMessageBox()
@@ -30,7 +30,7 @@ class Ui_Dialog(object):
 
         Dialog.setObjectName("Dialog")
         Dialog.resize(745, 430)
-        Dialog.setStyleSheet(self.style)
+        Dialog.setStyleSheet(utility.stylesheet.style["background"])
 
         self.textBrowser = QtWidgets.QTextBrowser(Dialog)
         self.textBrowser.setGeometry(QtCore.QRect(10, 50, 561, 331))

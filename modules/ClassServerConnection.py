@@ -4,18 +4,19 @@ import time
 import sys
 import hashlib
 from . import LPMRsaEncrypt
+from modules import utility
 
 
 class ServerConnection:
 
-    def __init__(self, ip, port, SaveFilePath):
+    def __init__(self, ip, port):
         self.connection_ip = ip
         self.connection_port = port
         self.PACKET_SIZE = 2048
         self.separator = "<S3P4>"
         self.valTimeout = 20.0
         self.connection_encrypted = "false"
-        self.defaultSaveFilePath = SaveFilePath
+        self.defaultSaveFilePath = utility.settings.settings["defaultSavePath"]
         self.rsaCrypt = LPMRsaEncrypt.LPMRsaEncrypt(self.PACKET_SIZE)
         self.createConnection()
         self.s.settimeout(self.valTimeout)

@@ -13,7 +13,7 @@ def main():
     Settings = settings.Settings()
 
     # db.LoadDatabaseFromFile()
-    testServer = ClassServerConnection.ServerConnection("192.168.1.3", int("50001"),"C:\\Users\\kanton\\Desktop\\PythonTo")
+    testServer = ClassServerConnection.ServerConnection("192.168.1.3", int("50001"))
 
 
 if __name__ == '__main__':

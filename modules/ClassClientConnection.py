@@ -99,24 +99,21 @@ class ClientConnection:
             filesize) + self.separator + filename + self.separator + dirpath + self.separator)
         self.sendRawMessage(messagetosend)
 
-        print ("===========================")
         print ("Initializing transfer")
-        print ("===========================")
 
         if not self.waitForServer("ready"):
             print ("Server did not respond in time. Transfer aborted")
             return False
         else:
             print ("Starting the transfer")
-
         filetosend = open(filepath, 'rb')
         line = filetosend.read(self.PACKET_SIZE)
         bytes_sent = 0
         from PyQt5.QtWidgets import QApplication, QWidget, QProgressBar
-        self.pb = progressbar.ProgressBar()
+        self.pb = progressbar.ProgressBar("Sending file", "Sending: {}".format(filepath))
         self.pb.show()
-        self.pb.setText("Sending file","Sending: {}".format(filepath))
-        self.pb.setValue(1)
+        #self.pb.setText("Sending file","Sending: {}".format(filepath))
+        self.pb.setValue(0)
 
 
         while line:

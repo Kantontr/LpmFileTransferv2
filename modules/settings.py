@@ -24,9 +24,10 @@ class Settings:
         self.settings["clientAutostart"] = "false"
         self.settings["serverAutostart"] = "true"
         self.settings["checkFileIntegrity"] = "true"
-        self.settings["serverRequestTimeout"] = "5"
+        self.settings["serverRequestTimeout"] = "10"
         self.settings["connectionEncrypted"] = "true"
         self.settings["allowForCommands"] = "false"
+        self.settings["defaultSavePath"] = "C:\\"
 
     def saveSettingsToFile(self):
         print("Saving settings to file")
@@ -36,6 +37,7 @@ class Settings:
             settingsFile.write(i + self.separator + self.settings.get(i) + "\n")
 
         settingsFile.close()
+        return True
 
     def loadSettingsFromFile(self):
         print("Loading settings from file")
@@ -45,7 +47,7 @@ class Settings:
             line = settingsFile.readline()
             if len(line) > 0:
                 key, val = line.split(self.separator)
-                self.settings[key] = val
+                self.settings[key] = val[0:len(val)-1]  #removes \n
 
             else:
                 break
