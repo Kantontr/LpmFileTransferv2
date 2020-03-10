@@ -54,6 +54,7 @@ class Ui_MainWindow(object):
         self.pushButtonRemUser.setStyleSheet(utility.stylesheet.style["button"])
         self.pushButtonRemUser.setIcon(QtGui.QIcon("icons\\removeUser.svg"))
         self.pushButtonRemUser.setIconSize(QtCore.QSize(40, 40))
+        self.pushButtonRemUser.setEnabled(0)
 
         self.pushButtonSettings = QtWidgets.QPushButton(self.centralwidget)
         self.pushButtonSettings.setGeometry(QtCore.QRect(430, 220, 51, 51))
@@ -69,6 +70,7 @@ class Ui_MainWindow(object):
         self.pushButtonEnter.setStyleSheet(utility.stylesheet.style["button"])
         self.pushButtonEnter.setIcon(QtGui.QIcon("icons\\selectUser.svg"))
         self.pushButtonEnter.setIconSize(QtCore.QSize(40, 40))
+        self.pushButtonEnter.setEnabled(0)
 
         self.pushButtonExit = QtWidgets.QPushButton(self.centralwidget)
         self.pushButtonExit.setGeometry(QtCore.QRect(430, 480, 51, 51))
@@ -77,9 +79,9 @@ class Ui_MainWindow(object):
         self.pushButtonExit.setIcon(QtGui.QIcon("icons\\exit.svg"))
         self.pushButtonExit.setIconSize(QtCore.QSize(40, 40))
 
-        self.treeWidget.clicked.connect(self.pt)
+        self.treeWidget.clicked.connect(self.treeSelection)
         self.treeWidget.itemDoubleClicked.connect(self.doubleClickHandler)
-        self.pushButtonExit.clicked.connect(self.test)
+        self.pushButtonExit.clicked.connect(self.quit)
         self.pushButtonEnter.clicked.connect(self.openUserWindow)
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -106,7 +108,7 @@ class Ui_MainWindow(object):
             QtWidgets.QTreeWidgetItem(ntw, [utility.db.saved_user[i][2]]).setFont(0, font)
             QtWidgets.QTreeWidgetItem(ntw, [utility.db.saved_user[i][3]]).setFont(0, font)
 
-    def test(self):
+    def quit(self):
         sys.exit()
 
     def openUserWindow(self):
@@ -130,17 +132,17 @@ class Ui_MainWindow(object):
             print ("Username: {}".format(username))
             self.openUserWindow()
 
-    def pt(self):
-
+    def treeSelection(self):
+        self.pushButtonEnter.setEnabled(True)
+        self.pushButtonRemUser.setEnabled(True)
         getSelected = self.treeWidget.selectedItems()
-        # parents =  self.treeWidget.currentItem().parent()
         if self.treeWidget.currentItem().parent():  # parent exist
             print (getSelected[0].text(0))
         else:
+            self.treeWidget.collapseAll()
+            self.treeWidget.expandItem(self.treeWidget.currentItem())
             print ("Knut bezrodzica")
 
-            # self.treeWidget.collapseAll()
-            # self.treeWidget.expandItem(self.treeWidget.currentItem())
 
     def pbsettings(self):
         Dialog = QtWidgets.QDialog()
