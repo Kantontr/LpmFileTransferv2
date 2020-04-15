@@ -38,3 +38,4 @@ class Utility:
 db = database.Database()
 settings = settings.Settings()
 stylesheet = stylesheet.Stylesheet()
+stylesheet.setStyle(settings.settings["colorScheme"])

@@ -6,27 +6,18 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-import sys
+import sys,time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QTextEdit, QAction, QFileDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QIcon
-from modules import ClassClientConnection
+from modules import ClassConnection
 from modules import utility
-
+import threading
 
 class Ui_Dialog_UserMsg(object):
 
-    def setupUi(self, Dialog, username):
+    def setupUi(self, Dialog, username,connection):
         self.username = username
-        #self.style = utility.stylesheet.style["background"]
-        self.connectionStatus = "connecting"
-
-        # msg = QMessageBox()
-        # msg.setIcon(QMessageBox.Information)
-        # msg.setWindowModality(0)
-        # msg.setWindowTitle("Loading")
-        # msg.setText("         Loading profile...         ")
-        # x = msg.exec_()
 
         Dialog.setObjectName("Dialog")
         Dialog.resize(745, 430)
@@ -65,9 +56,8 @@ class Ui_Dialog_UserMsg(object):
         self.pushButtonEnter.setObjectName("pushButtonEnter")
         self.pushButtonEnter.setStyleSheet(utility.stylesheet.style["button"])
         self.pushButtonEnter.setIcon(QtGui.QIcon("icons\\send.svg"))
-        self.pushButtonEnter.setIconSize(QtCore.QSize(25,25))
+        self.pushButtonEnter.setIconSize(QtCore.QSize(25, 25))
         self.pushButtonEnter.clicked.connect(self.pbEnter)
-
 
         self.pushButtonSendFile = QtWidgets.QPushButton(Dialog)
         self.pushButtonSendFile.setGeometry(QtCore.QRect(590, 120, 121, 41))
@@ -94,7 +84,7 @@ class Ui_Dialog_UserMsg(object):
         self.pushButtonRefreshStatus.setFont(font)
         self.pushButtonRefreshStatus.setObjectName("pushButtonRefreshStatus")
         self.pushButtonRefreshStatus.setStyleSheet(utility.stylesheet.style["button"])
-        self.pushButtonRefreshStatus.clicked.connect(self.checkConnectionStatus)
+        self.pushButtonRefreshStatus.clicked.connect(self.updateConnectionStatus)
 
         self.pushButtonDisconnect = QtWidgets.QPushButton(Dialog)
         self.pushButtonDisconnect.setGeometry(QtCore.QRect(590, 340, 121, 41))
@@ -119,26 +109,27 @@ class Ui_Dialog_UserMsg(object):
         self.labelConnectionStatusMod.setFont(font)
         self.labelConnectionStatusMod.setObjectName("labelConnectionStatusMod")
 
-        self.createConnection()
-        self.checkConnectionStatus()
+        self.connection = connection
         self.retranslateUi(Dialog)
 
-        self.checkConnectionStatus()
-
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+        #stopPromptThread = True
+        #threadPrompt.join()
+        threadOutput = threading.Thread(target=self.handleQueue)
+        threadOutput.start()
+
 
     def retranslateUi(self, Dialog):
-        self.checkConnectionStatus()
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Connection with {}".format(self.username)))
         self.labelConnectedTo.setText(_translate("Dialog", "Connected to: {}".format(self.username)))
-        #self.pushButtonEnter.setText(_translate("Dialog", "Ent"))
+        # self.pushButtonEnter.setText(_translate("Dialog", "Ent"))
         self.pushButtonSendFile.setText(_translate("Dialog", "Send File"))
         self.pushButtonSendFolder.setText(_translate("Dialog", "Send Folder"))
         self.pushButtonRefreshStatus.setText(_translate("Dialog", "Refresh Status"))
         self.pushButtonDisconnect.setText(_translate("Dialog", "Disconnect"))
         self.labelConnectionStatus.setText(_translate("Dialog", "Connection Status:"))
-        self.labelConnectionStatusMod.setText(_translate("Dialog", self.connectionStatus))
+        self.labelConnectionStatusMod.setText(_translate("Dialog", "Connecting"))
 
     def correctFilePath(self, filepath):
 
@@ -159,7 +150,7 @@ class Ui_Dialog_UserMsg(object):
         if file:
             try:
                 print ("Sending: {}".format(correctedFilePath))
-                result = self.connectionClient.sendFile(correctedFilePath, "")
+                result = self.connection.sendFile(correctedFilePath, "")
                 if result:
                     msg = QMessageBox()
                     msg.setIcon(QMessageBox.Information)
@@ -192,12 +183,14 @@ class Ui_Dialog_UserMsg(object):
     def pbEnter(self):
         if self.lineEditSendText:
             self.textBrowser.append("You: {}".format(self.lineEditSendText.text()))
+            self.connection.sendMessage(self.lineEditSendText.text())
             self.lineEditSendText.setText("")
+
 
     def pbDisconnect(self):
         if self.pushButtonDisconnect.text() == "Disconnect":
             try:
-                self.connectionClient.endConnection()
+                self.connection.endConnection()
             except:
                 pass
             finally:
@@ -205,53 +198,66 @@ class Ui_Dialog_UserMsg(object):
                 self.labelConnectionStatusMod.setStyleSheet("color:rgb(222,0,0);")
                 self.labelConnectionStatusMod.setText("Offline")
 
-        else:
+        else: #button = reconnect
             try:
                 self.createConnection()
-                result = self.checheckConnectionStatus
-                if result == "Online":
+                if connection.status == "Connected":
                     self.pushButtonDisconnect.setText("Disconnect")
             except:
                 pass
-            finally:
-                self.checkConnectionStatus()
 
-    def createConnection(self):
-        id = utility.db.getId(self.username)
-        name = utility.db.saved_user[id][0]
-        ip = utility.db.saved_user[id][1]
-        port = utility.db.saved_user[id][2]
-        self.connectionClient = ClassClientConnection.ClientConnection(name, ip, port)
-        if self.connectionClient:
-            if self.connectionClient.connection_status == "Online":
-                self.textBrowser.append("Connected to {}:{}".format(ip, port))
-            return True
-        else:
-            return False
-
-    def checkConnectionStatus(self):
+    def updateConnectionStatus(self,status):
 
         self.labelConnectionStatusMod.setStyleSheet("color:rgb(222,0,0);")
+        if status == "":
+            status = self.connection.status
         try:
-            status = self.connectionClient.connection_status
+            #status = self.connection.connection_status
 
-            if status == "connecting":
+            if status == "Connecting...":
                 self.labelConnectionStatusMod.setStyleSheet("color:orange;")
-            elif status == "Online":
+            elif status == "Connected":
                 self.labelConnectionStatusMod.setStyleSheet("color:rgb(0,222,0);")
             elif status == "Offline":
                 self.labelConnectionStatusMod.setStyleSheet("color:rgb(222,0,0);")
                 self.pushButtonDisconnect.setText("Reconnect")
-            else:
+            elif status == "error":
                 self.labelConnectionStatusMod.setStyleSheet("color:rgb(222,0,0);")
                 self.labelConnectionStatusMod.setText("error")
                 self.pushButtonDisconnect.setText("Reconnect")
+            else:
+                self.labelConnectionStatusMod.setStyleSheet("color:orange;")
 
             self.labelConnectionStatusMod.setText(status)
         except:
             self.labelConnectionStatusMod.setStyleSheet("color:rgb(222,0,0);")
-            self.labelConnectionStatusMod.setText("error")
+            self.labelConnectionStatusMod.setText("Unknown error")
             self.pushButtonDisconnect.setText("Reconnect")
 
         finally:
             QApplication.processEvents()
+
+    def handleQueue(self):
+        print ("Entering Output Queue loop")
+        while True:
+
+            if self.labelConnectionStatusMod.text() != self.connection.status:
+                print ("Updateing status")
+                self.updateConnectionStatus(self.connection.status)
+
+            if self.connection.OutputQueue and not self.connection.OutputQueue.empty():
+                self.textBrowser.append("{}: {}".format(self.username,self.connection.OutputQueue.get()))
+                print ("Output Queue wasn't empty!")
+            time.sleep(0.5)
+
+    # def promptLoading(self):
+    #     msg = QMessageBox()
+    #     msg.setIcon(QMessageBox.Information)
+    #     msg.setWindowModality(0)
+    #     msg.setWindowTitle("Loading")
+    #     msg.setText("         Loading profile...         ")
+    #     x = msg.exec_()
+    #     while True:
+    #         global stopPromptThread
+    #         if stop_threads:
+    #             break

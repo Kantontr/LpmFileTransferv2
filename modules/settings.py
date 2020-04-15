@@ -27,6 +27,7 @@ class Settings:
         self.settings["serverRequestTimeout"] = "10"
         self.settings["connectionEncrypted"] = "true"
         self.settings["allowForCommands"] = "false"
+        self.settings["requestFileAccept"] = "true"
         self.settings["defaultSavePath"] = "C:\\"
 
     def saveSettingsToFile(self):

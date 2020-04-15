@@ -30,9 +30,12 @@ class Database:
 
     def genNewId(self):
         i = 0
-        while i in self.saved_user:
+        while True:
+            if str(i) not in self.saved_user:
+                print ("New unique id: {}".format(i))
+                return i
             i += 1
-        return i
+
 
     def getId(self, username):
         for i, j in self.saved_user.items():
@@ -78,6 +81,12 @@ class Database:
                 self.loadDatabaseFromFile()
                 return "Operation Failed. No changes"
 
+
+    def removeUser(self,username):
+        if self.checkIfUserExist(username):
+            del self.saved_user[self.getId(username)]
+            self.saveDatabaseToFile()
+
     def loadDatabaseFromFile(self):
 
         dbFile = open(self.databasePath, "r")
@@ -87,7 +96,7 @@ class Database:
             line = dbFile.readline()
             if len(line) > 0:
                 list = line.split(self.separator)
-                list[3] = list[3][0:len(list[3])]
+                list[4] = list[4][0:len(list[4])-1]
                 self.saved_user[list[0]] = [list[1], list[2], list[3], list[4]]
             else:
                 break
@@ -101,6 +110,7 @@ class Database:
             dbFile.write(str(i) + self.separator)
             list = self.saved_user.get(i)
             dbFile.write(
-                list[0] + self.separator + list[1] + self.separator + list[2] + self.separator + list[3] + "\n")
+                list[0] + self.separator + list[1] + self.separator + list[2] + self.separator + list[3]+"\n")
+
         dbFile.close()
         print("saveDatabaseToFile:Saved")
